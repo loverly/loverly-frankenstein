@@ -16,7 +16,7 @@ module.exports = (function () {
     Model: require('./lib/AbstractModel.js'),
     Instance: require('./lib/Instance.js'),
     Table: require('./lib/AbstractTable.js'),
-    API: require('./lib/AbstractApi.js'),
+    //API: require('./lib/AbstractApi.js'),
     File: require('./lib/AbstractFile.js'),
     Validator: require('./lib/AbstractValidator.js'),
     Orm: require('./lib/Orm.js')
