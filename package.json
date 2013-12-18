@@ -1,0 +1,50 @@
+{
+  "name": "loverly-frankenstein",
+  "description": "The loverly node-js model layer that allows a unified hierarchical structure on top of an assortment of data-storage engines",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/loverly/loverly-frankenstein",
+  "repository": "https://github.com/loverly/loverly-frankenstein",
+  "author": {
+    "name": "Lover.ly Team",
+    "url": "http://dev.lover.ly/"
+  },
+  "contributors": [
+    {
+      "name": "David Carcamo",
+      "email": "hello@davidcarcamo.com"
+    },
+    {
+      "name": "Brandon Eum",
+      "email": "brandon@lover.ly"
+    },
+    {
+      "name": "Karen Teng",
+      "email": "karen@lover.ly"
+    },
+    {
+      "name": "Luca Columbu",
+      "email": "luca@lover.ly"
+    },
+    {
+      "name": "Jennifer Creighton",
+      "email": "jenn@lover.ly"
+    },
+    {
+      "name": "Sharrukin Josephson",
+      "email": "sharrukin@lover.ly"
+    }
+  ],
+  "main": "./index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "spears": "git+https://github.com/beum/spears-js.git",
+    "chai": "latest",
+    "sinon-chai": "latest",
+    "mocha": "latest",
+    "cucumber": "latest"
+  },
+  "engines": {
+    "node": ">= 0.10.21"
+  }
+}
