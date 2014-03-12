@@ -153,15 +153,125 @@ sake of performance).
 
 # Creating a model
 
-### Data types
+A model is composed of the following pieces:
 
-### Aliases
+* name
+* definition
+* views
+* sources
+* queries
 
-### One-to-one relationships
+The __name__ is the model's name (obvious).  I like to use the general convention
+of model name + "Model" for the class and file naming.  For example the "Wedding"
+model would have a class and filename of "WeddingModel".
 
-### One-to-many relationships
+The __definition__ of a model is the core of what the model looks like and how each
+field gets its data.  Each property of a model is a field in the output and contains
+a type, constraints, views it is included in, and a mapping to a data source.
 
-### Many-to-many relationships
+The __views__ property defines default options for a particular sub-segment of this
+model's data.  You can think of a view as a way to filter fields and to make your
+reading of data more efficient.  A model will only read from data sources whose
+fields are required in a view, so have a minimal view with only the ID or similar
+will make the reads much more efficient for a very complex model.  Each field definition
+defines what views it should be included in.
+
+The __sources__ property lists out the different data sources for this model (as
+described above) and their relationship to this model (one-to-one, one-to-many, etc).
+
+The __queries__ propertly lists saved query configurations for data sources that
+allow you to query different data sources in different ways with a named query.
+This avoids having repeat query logic everywhere in your code and allows the model
+to abstract the physical query parameters that need to be sent to different data
+sources to provide the expected result.
+
+
+## Model Definition
+
+A model definition might look like the following:
+
+```javascript
+this.definition = {};
+
+this.definition.id = {
+  "type": "STRING",
+  "required": true,
+  "readOnly": true,
+  "views": ["default"],
+  "constraints": {
+    "isInt": {"msg": "ID must be an integer"}
+  },
+  "mapping": {
+    "type": this.MAPPING_TYPES.FIELD,
+    "source": "Source1",
+    "alias": "cool_fieldx"
+  },
+  "serializer": function (data) {
+    return parseInt(data, 10);
+  },
+  "deserializer": function (data) {
+    return new String(data);
+  }
+}
+```
+
+The field definition is by far the most complex structure in a model.  It is composed
+of:
+
+* __type__ - The data type of the field
+* __required__ - Boolean, whether or not this field must be specified
+* __readOnly__ - Cannot be modified by updates (usually auto-generated fields)
+* __views__ - Which views this field should be included in
+* __constraints__ - Field validation for creating/updating
+* __mapping__ - Specify which data source this field's information comes from
+* __serializer__ - A function to transform data before passing to a data source
+* __deserializer__ - A function to transform data when reading from a data source
+
+All of the different field definition options are described in detail below.
+
+### Type
+
+Supported types:
+
+* __BOOLEAN__
+* __DATE__
+* __INTEGER__
+* __NUMBER__
+* __STRING__
+* __ARRAY__ - Used for submodels with one-to-many relationships
+
+
+### Required & Read Only
+
+The required field is neccessary because if a field is not required, its validation
+is skipped if the field is not defined.  Use required to ensure that the field is
+always validated before save.
+
+Read only fields will typically be used for auto-generated data such as auto increment
+surrogate keys or timestamps.  Read only fields can never be specified.
+
+
+### Views
+
+Views are field filters.  They tell the model what data to return to minimize the
+number of reads necessary from its disparate data sources and to minimize the
+response size from the model.  Only data sources whose fields are included in the
+view will be queried for data.
+
+
+### Constraints
+
+### Mapping
+
+#### One-to-one relationships
+
+#### One-to-many relationships
+
+
+### Serializer & Deserializer
+
+
+### Extending models
 
 
 # Creating your own data sources
