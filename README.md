@@ -204,13 +204,13 @@ this.definition.id = {
   "mapping": {
     "type": this.MAPPING_TYPES.FIELD,
     "source": "Source1",
-    "alias": "cool_fieldx"
-  },
-  "serializer": function (data) {
-    return parseInt(data, 10);
-  },
-  "deserializer": function (data) {
-    return new String(data);
+    "alias": "cool_fieldx",
+    "serialize": function (data) {
+      return parseInt(data, 10);
+    },
+    "deserialize": function (data) {
+      return new String(data);
+    }
   }
 }
 ```
@@ -224,10 +224,9 @@ of:
 * __views__ - Which views this field should be included in
 * __constraints__ - Field validation for creating/updating
 * __mapping__ - Specify which data source this field's information comes from
-* __serializer__ - A function to transform data before passing to a data source
-* __deserializer__ - A function to transform data when reading from a data source
 
 All of the different field definition options are described in detail below.
+
 
 ### Type
 
@@ -261,6 +260,63 @@ view will be queried for data.
 
 ### Constraints
 
+Field constraints are validation requirements on the field.  For example, a username
+might require that it be 6-10 characters long, only contain alpha-numeric characters
+and is required for the form.
+
+The constraints property on a field is an object that maps to validation functions
+on your given validator that you've set on the `this.validator` property.  It must
+implement the node.js [validator](https://github.com/chriso/validator.js) library.
+
+Basically it just has a bunch of functions that return `true` or `false` depending
+on whether or not the validation has passed.
+
+A validation constraint definition might look like:
+
+```javascript
+
+this.definition.username = {
+  type: "STRING",
+  views: ['default'],
+  required: true,
+  constraints: {
+    isNotBlank: {
+      msg: "Please specify your username."
+    },
+    isAlphanumericString: {
+      msg: "A username must contain only letters or numbers."
+    },
+    isLength: {
+      args: [6, 10],
+      msg: "A username must be between 6 and 10 characters long."
+    },
+    hasAtLeastMinNumbers: {
+      args: [2],
+      msg: "A username must have at least 2 numbers.",
+      isValid: function (val, limit) {
+        var minNumRegex = new RegExp("(.*[0-9]{1}.*){" + limit + "}");
+        return minNumRegex.test(val);
+      }
+    },
+  }
+};
+
+```
+
+Notice that the last item in the list specifies an `isValid` method.  You can
+create non-reusable custom validators inline using this method.
+
+Also notice that constraints are specified in order from general to specific so
+that way the errors can help the user properly complete the form.  The `isNotBlank`
+validator is added to ensure that a custom error message is shown when the user
+has left the username as `null`.
+
+Some validators can be modified by specifying constraint arguments, as in the `args`
+property on the `isLength` constraint.  The `args` property is an array, where the
+value of the field is always the first argument to a validation function, but the
+args array is appended after that using the `func.apply(context, args)` method.
+
+
 ### Mapping
 
 #### One-to-one relationships
@@ -272,6 +328,146 @@ view will be queried for data.
 
 
 ### Extending models
+
+`TODO:` We definitely need a way to easily extend/reuse models
+
+I think the best way to achieve this is to change the way models are defined, to
+house the various fields at the `prototype` level, allowing copying to occur through
+typical prototypal inheritance like:
+
+```javascript
+var AbstractModel = require('loverly-frankenstein').Model;
+
+var ParentModel = function () {
+  AbstractModel.call(this);
+};
+
+ParentModel.prototype = new AbstractModel();
+ParentModel.definition = {};
+
+ParentModel.definition.id = {
+  type: 'NUMBER',
+  views: ['default'],
+  constraints: {}
+};
+
+ParentModel.definition.description = {
+  type: 'STRING',
+  views: ['default'],
+  constraints: {}
+};
+
+// Create a child model that extends the parent model, but overrides some defs
+
+var ChildModel = function () {
+  ParentModel.call(this);
+};
+
+ChildModel.prototype = new ParentModel();
+
+ChildModel.prototype.definition.description = {
+  type: 'STRING',
+  views: ['details'],
+  constraints: {
+    isLength: {
+      args: [1, 2],
+      msg: 'Some cool message'
+    }
+  }
+};
+
+```
+
+That way we follow all of the common javascript patterns for inheritance and anyone
+can use whatever JS utilities they want for prototype extension.
+
+
+### Adding a Search Submodel to Your Model
+
+Models have a built-in search concept which will return a list of instances based
+off of a query passed to a search model.  Each model may have only one `SEARCH` type
+submodel which it will query to obtain a list of IDs to use to generate a list
+of objects.
+
+
+`TODO:` Provide access to the solr client I created as part of frankenstein maybe the same
+for the rackspace client and sequelize?
+
+
+At [loverly](http://lover.ly) we use Solr for our search queries, and therefore
+our search models are based off of Solr Data Sources.
+
+Specifically for Solr data sources, there are two types of query syntaxes that
+are supported, `edismax` and `lucene`.  This is configured at the Data Source level
+if you are using the built-in (loverly) Solr client.
+
+The source can be added to the model like:
+
+```javascript
+this.sources = {
+  "ImageSearch": {
+    "relationship": this.SOURCE_MAPPING_TYPES.SEARCH
+  }
+}
+```
+
+The search model should be defined like a typical model with solr as a data source.
+Once that is configured, you can call the search endpoint like:
+
+```javascript
+// edismax example
+var searchQuery = {
+  term1: '+', // this term is mandatory in the search results
+  term2: '-', // this term is prohibited (excluded) in search results
+  term3: '',  // this term is optional
+  term4: '',  // this term is also optional
+};
+var options = {
+  /* typical model list options */
+  handler: 'similar',      // request handler
+  parser: 'edismax',       // parser
+  search_field: 'image_id' // field to search against in the current model's sources
+};
+model.search(searcQuery, options, callback);
+
+// lucene example
+// The lucene type only supports the "q" param where you specify the raw lucene
+// query
+var searchQuery = {
+  q: '+field1:term1 -field1:term2 field2:term3 field2:term4'
+};
+var options = {/* typical model list options */}
+model.search(searcQuery, options, callback);
+```
+
+For the edismax parser, the fields where the different terms (keywords), are
+searched are configured by the search request handler.  The weighting (boosts) are
+also configured in the request handler.  The terms can be controlled with `+`, `-`,
+or blank for required, excluded, and optional terms respectively.
+
+For the lucene parser, the raw query must be generated (for now) and placed into
+the `q` parameter.  The query should follow the lucene syntax and will specify
+field/value pairs, plus whatever else you want.  This is for more complex queries
+involving multiple fields where one field's value is mandatory and another is optional.
+
+The search function returns the same result structure as the `list()` method with
+the same options.  This is because the search method first calls the search model
+to get a list of IDs then uses that as a filter parameter for calling the `list()`
+method on the model.  The field that is filtered is determined by the `search_field`
+in the options, defaulting to `id`.
+
+Search models must always return an `id` property.  This is transformed into an
+array and given to the parent model's list method for filtering, using an `in` style
+query.  The data source may return a different property, but this should be aliased
+at the model layer to be `id` (i.e. `image_id` is transformed to just `id` using
+the `mapping` property on the field with an `alias`).
+
+
+
+### Lists with One-to-Many Relationships (Data Decoration)
+
+`TODO:`  Need to do this by default if the one-to-many field is included in the
+results.
 
 
 # Creating your own data sources
