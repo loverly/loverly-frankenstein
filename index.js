@@ -15,10 +15,12 @@ module.exports = (function () {
   var exports = {
     Source: require('./lib/AbstractSource.js'),
     Model: require('./lib/AbstractModel.js'),
+    SolrSearchModel: require('./lib/AbstractSolrSearchModel.js'),
     Instance: require('./lib/Instance.js'),
     Table: require('./lib/AbstractTable.js'),
     ManyToManyTable: require('./lib/AbstractManyToManyTable.js'),
     ApiClient: require('./lib/AbstractApiClient.js'),
+    SolrClient: require('./lib/SolrClient.js'),
     File: require('./lib/AbstractFile.js'),
     Validator: require('./lib/AbstractValidator.js'),
     Orm: require('./lib/Orm.js')
