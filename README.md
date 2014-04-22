@@ -1,3 +1,11 @@
+# Disclaimer
+
+This is a *WORK IN PROGRESS* I would not recommend using this unless you really
+want to waste a lot of time.
+
+
+
+
 # loverly-frankenstein
 
 
