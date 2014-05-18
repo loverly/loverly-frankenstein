@@ -23,7 +23,9 @@ module.exports = (function () {
     SolrClient: require('./lib/SolrClient.js'),
     File: require('./lib/AbstractFile.js'),
     Validator: require('./lib/AbstractValidator.js'),
-    Orm: require('./lib/Orm.js')
+    SequelizeOrm: require('./lib/SequelizeOrm.js'),
+    MongoOdm: require('./lib/MongoOdm.js'),
+    Collection: require('./lib/AbstractCollection.js')
   };
 
   // TODO: Think of a way to provide convenience methods to make it easier to use
