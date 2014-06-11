@@ -1,7 +1,7 @@
 {
   "name": "loverly-frankenstein",
   "description": "The loverly node-js model layer that allows a unified hierarchical structure on top of an assortment of data-storage engines",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "homepage": "https://github.com/loverly/loverly-frankenstein",
   "repository": "https://github.com/loverly/loverly-frankenstein",
   "author": {
@@ -30,8 +30,8 @@
       "email": "jenn@lover.ly"
     },
     {
-      "name": "Sharrukin Josephson",
-      "email": "sharrukin@lover.ly"
+      "name": "Dan Post",
+      "email": "dan.post@lover.ly"
     }
   ],
   "main": "./index.js",
