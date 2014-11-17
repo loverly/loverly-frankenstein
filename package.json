@@ -1,7 +1,7 @@
 {
   "name": "loverly-frankenstein",
   "description": "The loverly node-js model layer that allows a unified hierarchical structure on top of an assortment of data-storage engines",
-  "version": "0.2.21",
+  "version": "0.2.22",
   "homepage": "https://github.com/loverly/loverly-frankenstein",
   "repository": "https://github.com/loverly/loverly-frankenstein",
   "author": {
